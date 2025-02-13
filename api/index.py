@@ -88,6 +88,11 @@ def convert_to_input_array(input_data):
     return input_array
 
 
+@app.route("/")
+def welcome():
+    return "Welcome to the Voting Ensemble Model API", "status"
+
+
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
