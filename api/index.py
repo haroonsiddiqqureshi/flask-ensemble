@@ -43,7 +43,6 @@ app = Flask(__name__)
 
 CORS(app)
 
-
 class ModelSchema(BaseModel):
     gender: int
     age: float
