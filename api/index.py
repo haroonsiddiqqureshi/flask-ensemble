@@ -17,27 +17,27 @@ bucket_name = os.getenv("VULTR_S3_BUCKET_NAME")
 model_key = "voting_ensemble_model.onnx"
 
 
-def load_model_from_s3():
-    session = boto3.session.Session()
-    client = session.client(
-        "s3",
-        region_name=hostname.split(".")[0],
-        endpoint_url="https://" + hostname,
-        aws_access_key_id=access_key,
-        aws_secret_access_key=secret_key,
-    )
+# def load_model_from_s3():
+#     session = boto3.session.Session()
+#     client = session.client(
+#         "s3",
+#         region_name=hostname.split(".")[0],
+#         endpoint_url="https://" + hostname,
+#         aws_access_key_id=access_key,
+#         aws_secret_access_key=secret_key,
+#     )
 
-    obj = client.get_object(Bucket=bucket_name, Key=model_key)
-    model_data = obj["Body"].read()
+#     obj = client.get_object(Bucket=bucket_name, Key=model_key)
+#     model_data = obj["Body"].read()
 
-    with tempfile.NamedTemporaryFile(delete=False) as temp_model_file:
-        temp_model_file.write(model_data)
-        temp_model_path = temp_model_file.name
+#     with tempfile.NamedTemporaryFile(delete=False) as temp_model_file:
+#         temp_model_file.write(model_data)
+#         temp_model_path = temp_model_file.name
 
-    return ort.InferenceSession(temp_model_path)
+#     return ort.InferenceSession(temp_model_path)
 
 
-session = load_model_from_s3()
+# session = load_model_from_s3()
 
 app = Flask(__name__)
 
@@ -93,34 +93,34 @@ def welcome():
     return "Welcome to the Voting Ensemble Model API", "status"
 
 
-@app.route("/predict", methods=["POST"])
-def predict():
-    try:
-        data = request.get_json()
-        model_data = ModelSchema(**data)
+# @app.route("/predict", methods=["POST"])
+# def predict():
+#     try:
+#         data = request.get_json()
+#         model_data = ModelSchema(**data)
 
-        input_array = convert_to_input_array(model_data.model_dump())
+#         input_array = convert_to_input_array(model_data.model_dump())
 
-        inputs = {session.get_inputs()[0].name: input_array.reshape(1, -1)}
-        prediction = session.run(None, inputs)
+#         inputs = {session.get_inputs()[0].name: input_array.reshape(1, -1)}
+#         prediction = session.run(None, inputs)
 
-        return (
-            jsonify(
-                {
-                    "message": "Success",
-                    "status": 200,
-                    "prediction": prediction[0].tolist(),
-                }
-            ),
-            200,
-        )
-    except ValidationError as e:
-        return (
-            jsonify(
-                {"message": "Validation Error", "errors": e.errors(), "status": 400}
-            ),
-            400,
-        )
+#         return (
+#             jsonify(
+#                 {
+#                     "message": "Success",
+#                     "status": 200,
+#                     "prediction": prediction[0].tolist(),
+#                 }
+#             ),
+#             200,
+#         )
+#     except ValidationError as e:
+#         return (
+#             jsonify(
+#                 {"message": "Validation Error", "errors": e.errors(), "status": 400}
+#             ),
+#             400,
+#         )
 
 
 if __name__ == "__main__":
