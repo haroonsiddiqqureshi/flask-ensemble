@@ -2,7 +2,6 @@ import os
 import boto3
 import numpy as np
 import onnxruntime as ort
-import tempfile
 from flask import Flask, request, jsonify
 from pydantic import BaseModel, ValidationError
 from flask_cors import CORS
@@ -18,23 +17,25 @@ model_key = "voting_ensemble_model.onnx"
 
 
 def load_model_from_s3():
-    session = boto3.session.Session()
-    client = session.client(
-        "s3",
-        region_name=hostname.split(".")[0],
-        endpoint_url="https://" + hostname,
-        aws_access_key_id=access_key,
-        aws_secret_access_key=secret_key,
-    )
+    model_path = model_key
 
-    obj = client.get_object(Bucket=bucket_name, Key=model_key)
-    model_data = obj["Body"].read()
+    if not os.path.exists(model_path):
+        session = boto3.session.Session()
+        client = session.client(
+            "s3",
+            region_name=hostname.split(".")[0],
+            endpoint_url="https://" + hostname,
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+        )
 
-    with tempfile.NamedTemporaryFile(delete=False) as temp_model_file:
-        temp_model_file.write(model_data)
-        temp_model_path = temp_model_file.name
+        obj = client.get_object(Bucket=bucket_name, Key=model_key)
+        model_data = obj["Body"].read()
 
-    return ort.InferenceSession(temp_model_path)
+        with open(model_path, "wb") as f:
+            f.write(model_data)
+
+    return ort.InferenceSession(model_path)
 
 
 session = load_model_from_s3()
