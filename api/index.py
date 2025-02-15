@@ -16,6 +16,8 @@ access_key = os.getenv("VULTR_S3_ACCESS")
 bucket_name = os.getenv("VULTR_S3_BUCKET_NAME")
 model_key = "voting_ensemble_model.onnx"
 
+session = None
+
 
 def load_model_from_s3():
     session = boto3.session.Session()
@@ -86,6 +88,13 @@ def convert_to_input_array(input_data):
     input_array = np.array([list(mapped_data.values())]).astype(np.float32)
 
     return input_array
+
+
+@app.before_first_request
+def initialize_model():
+    global session
+    if session is None:
+        session = load_model_from_s3()
 
 
 @app.route("/")
