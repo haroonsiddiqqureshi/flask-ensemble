@@ -139,9 +139,9 @@ def predict_line():
     prediction = session.run(None, inputs)
 
     if prediction[0] > 0.5:
-        return jsonify({"prediction": "ไม่ได้เศร้า"}), 200
+        return jsonify({"prediction": "คุณกำลังเศร้า😭"}), 200
     else:
-        return jsonify({"prediction": "เศร้า"}), 200
+        return jsonify({"prediction": "คุณไม่ได้เศร้า😼"}), 200
 
 
 if __name__ == "__main__":
