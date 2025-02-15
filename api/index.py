@@ -131,9 +131,9 @@ def predict():
 @app.route("/predict/line", methods=["POST"])
 def predict_line():
     data = request.get_json()
-    model_data = ModelSchema(**data)
+    model_data = data
 
-    input_array = convert_to_input_array(model_data.model_dump())
+    input_array = convert_to_input_array(model_data)
 
     inputs = {session.get_inputs()[0].name: input_array.reshape(1, -1)}
     prediction = session.run(None, inputs)
