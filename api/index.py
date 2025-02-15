@@ -90,7 +90,7 @@ def convert_to_input_array(input_data):
     return input_array
 
 
-@app.before_first_request
+@app.before_request
 def initialize_model():
     global session
     if session is None:
