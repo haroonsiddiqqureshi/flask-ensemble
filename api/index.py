@@ -43,6 +43,7 @@ app = Flask(__name__)
 
 CORS(app)
 
+
 class ModelSchema(BaseModel):
     gender: int
     age: float
@@ -125,6 +126,22 @@ def predict():
             jsonify({"message": "An error occurred", "error": str(e), "status": 500}),
             500,
         )
+
+
+@app.route("/predict/line", methods=["POST"])
+def predict_line():
+    data = request.get_json()
+    model_data = ModelSchema(**data)
+
+    input_array = convert_to_input_array(model_data.model_dump())
+
+    inputs = {session.get_inputs()[0].name: input_array.reshape(1, -1)}
+    prediction = session.run(None, inputs)
+
+    if prediction[0] > 0.5:
+        return jsonify({"prediction": "ไม่ได้เศร้า"}), 200
+    else:
+        return jsonify({"prediction": "เศร้า"}), 200
 
 
 if __name__ == "__main__":
