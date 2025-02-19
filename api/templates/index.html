@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>
+        Hello Word! I Miss P Sai Very Much Hahahahah
+    </h1>
+    <form action="{{url_for('predict')}}" method="POST">
+        <div>
+            <label for="precipitation">precipitation</label>
+            <input name="precipitation" type="number" value="10.00">
+        </div>
+        <div>
+            <label for="temp_max">temp_max</label>
+            <input name="temp_max" type="number" value="20">
+        </div>
+        <div>
+            <label for="temp_min">temp_min</label>
+            <input name="temp_min" type="number" value="2">
+        </div>
+        <div>
+            <label for="wind">wind</label>
+            <input name="wind" type="number" value="4.2">
+        </div>
+
+        <div>
+            <button type="submit">Predict</button>
+        </div>
+    </form>
+</body>
+
+</html>

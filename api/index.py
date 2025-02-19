@@ -1,117 +1,45 @@
-import os
-import boto3
-import numpy as np
 import onnxruntime as ort
-import tempfile
-from flask import Flask, request, jsonify
-from pydantic import BaseModel, ValidationError
+import numpy as np
+from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
-from dotenv import load_dotenv
 
-load_dotenv()
-
-hostname = os.getenv("VULTR_S3_HOSTNAME")
-secret_key = os.getenv("VULTR_S3_SECRET")
-access_key = os.getenv("VULTR_S3_ACCESS")
-bucket_name = os.getenv("VULTR_S3_BUCKET_NAME")
-model_key = "voting_ensemble_model.onnx"
-
-session = None
-
-
-def load_model_from_s3():
-    session = boto3.session.Session()
-    client = session.client(
-        "s3",
-        region_name=hostname.split(".")[0],
-        endpoint_url="https://" + hostname,
-        aws_access_key_id=access_key,
-        aws_secret_access_key=secret_key,
-    )
-
-    obj = client.get_object(Bucket=bucket_name, Key=model_key)
-    model_data = obj["Body"].read()
-
-    with tempfile.NamedTemporaryFile(delete=False) as temp_model_file:
-        temp_model_file.write(model_data)
-        temp_model_path = temp_model_file.name
-
-    return ort.InferenceSession(temp_model_path)
-
-
-session = load_model_from_s3()
+onnx_model_path = "./ensemble_model.onnx"
+ort_session = ort.InferenceSession(onnx_model_path)
 
 app = Flask(__name__)
-
 CORS(app)
-
-
-class ModelSchema(BaseModel):
-    gender: int
-    age: float
-    profession: int
-    academic_pressure: int
-    work_pressure: int
-    cga: float
-    study_satisfaction: int
-    job_satisfaction: int
-    sleep_duration: int
-    dietary_habits: int
-    degree: int
-    have_suicidal_thoughts: int
-    work_study_hours: int
-    financial_stress: int
-    family_history_mental_illness: int
-
-
-def convert_to_input_array(input_data):
-    column_mapping = {
-        "gender": "Gender",
-        "age": "Age",
-        "profession": "Profession",
-        "academic_pressure": "Academic Pressure",
-        "work_pressure": "Work Pressure",
-        "cga": "CGPA",
-        "study_satisfaction": "Study Satisfaction",
-        "job_satisfaction": "Job Satisfaction",
-        "sleep_duration": "Sleep Duration",
-        "dietary_habits": "Dietary Habits",
-        "degree": "Degree",
-        "have_suicidal_thoughts": "Have you ever had suicidal thoughts ?",
-        "work_study_hours": "Work/Study Hours",
-        "financial_stress": "Financial Stress",
-        "family_history_mental_illness": "Family History of Mental Illness",
-    }
-
-    mapped_data = {column_mapping[key]: value for key, value in input_data.items()}
-
-    input_array = np.array([list(mapped_data.values())]).astype(np.float32)
-
-    return input_array
-
-
-@app.before_request
-def initialize_model():
-    global session
-    if session is None:
-        session = load_model_from_s3()
 
 
 @app.route("/")
 def home():
-    return jsonify({"message": "Hello, World!"}), 200
+    return render_template("index.html"), 200
 
 
 @app.route("/predict", methods=["POST"])
 def predict():
+    precipitation = request.form["precipitation"]
+    temp_max = request.form["temp_max"]
+    temp_min = request.form["temp_min"]
+    wind = request.form["wind"]
+
+    input_data = (float(precipitation), float(temp_max), float(temp_min), float(wind))
+    input_array = np.array([input_data], dtype=np.float32)
+
+    inputs = {ort_session.get_inputs()[0].name: input_array.reshape(1, -1)}
+    prediction = ort_session.run(None, inputs)
+
+    predict = prediction[0][0]
+    return predict
+
+
+@app.route("/predict/line", methods=["POST"])
+def predict_line():
     try:
-        data = request.get_json()
-        model_data = ModelSchema(**data)
+        input_data = request.get_json()
+        input_array = np.array([list(input_data.values())], dtype=np.float32)
 
-        input_array = convert_to_input_array(model_data.model_dump())
-
-        inputs = {session.get_inputs()[0].name: input_array.reshape(1, -1)}
-        prediction = session.run(None, inputs)
+        inputs = {ort_session.get_inputs()[0].name: input_array.reshape(1, -1)}
+        prediction = ort_session.run(None, inputs)
 
         return (
             jsonify(
@@ -123,34 +51,12 @@ def predict():
             ),
             200,
         )
-    except ValidationError as e:
-        return (
-            jsonify(
-                {"message": "Validation Error", "errors": e.errors(), "status": 400}
-            ),
-            400,
-        )
+
     except Exception as e:
         return (
             jsonify({"message": "An error occurred", "error": str(e), "status": 500}),
             500,
         )
-
-
-@app.route("/predict/line", methods=["POST"])
-def predict_line():
-    data = request.get_json()
-    model_data = data
-
-    input_array = convert_to_input_array(model_data)
-
-    inputs = {session.get_inputs()[0].name: input_array.reshape(1, -1)}
-    prediction = session.run(None, inputs)
-
-    if prediction[0] > 0.5:
-        return jsonify({"prediction": "คุณกำลังเศร้า😭"}), 200
-    else:
-        return jsonify({"prediction": "คุณไม่ได้เศร้า😼"}), 200
 
 
 if __name__ == "__main__":

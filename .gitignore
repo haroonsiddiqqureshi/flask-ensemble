@@ -174,4 +174,3 @@ cython_debug/
 .DS_STORE
 .vercel
 .env*.local
-*.onnx
