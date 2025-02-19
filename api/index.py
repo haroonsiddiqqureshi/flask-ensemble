@@ -29,7 +29,7 @@ def predict():
     prediction = ort_session.run(None, inputs)
 
     predict = prediction[0][0]
-    return render_template("index.html", predict=predict), 200
+    return render_template("predict.html", predict=predict), 200
 
 
 @app.route("/predict/line", methods=["POST"])
