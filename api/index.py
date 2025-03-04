@@ -55,18 +55,45 @@ def predict():
 @app.route("/predict/line", methods=["POST"])
 def predict_line():
     try:
-        input_data = request.get_json()
+        cap_surface = (int(request.form["cap_surface"]),)
+        odor = (int(request.form["odor"]),)
+        gill_spacing = (int(request.form["gill_spacing"]),)
+        gill_size = (int(request.form["gill_size"]),)
+        stalk_root = (int(request.form["stalk_root"]),)
+        stalk_surface_below_ring = (int(request.form["stalk_surface_below_ring"]),)
+        spore_print_color = (int(request.form["spore_print_color"]),)
+        population = (int(request.form["population"]),)
+        habitat = (int(request.form["habitat"]),)
+
+        input_data = (
+            cap_surface,
+            odor,
+            gill_spacing,
+            gill_size,
+            stalk_root,
+            stalk_surface_below_ring,
+            spore_print_color,
+            population,
+            habitat,
+        )
         input_array = np.array([list(input_data.values())], dtype=np.float32)
 
         inputs = {ort_session.get_inputs()[0].name: input_array.reshape(1, -1)}
         prediction = ort_session.run(None, inputs)
+
+        if prediction[0] == 0:
+            message = "Edibles | กินได้"
+        elif prediction[0] == 1:
+            message = "Poisonous! | กินไม่ได้"
+        else:
+            message = "No Data | ไม่มีข้อมูล"
 
         return (
             jsonify(
                 {
                     "message": "Success",
                     "status": 200,
-                    "prediction": prediction[0].tolist(),
+                    "prediction": message,
                 }
             ),
             200,
