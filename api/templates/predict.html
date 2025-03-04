@@ -1,19 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title data-en="Mushroom Classification" data-th="การจำแนกประเภทเห็ด">Mushroom Classification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
 </head>
+<body class="bg-gradient-to-r from-green-200 to-blue-300 min-h-screen flex items-center justify-center">
+    <div class="bg-white shadow-2xl rounded-lg p-6 max-w-lg w-full text-center transform transition-transform hover:scale-105 duration-300">
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-3xl font-extrabold text-gray-900" data-en="Mushroom Classification" data-th="การจำแนกประเภทเห็ด">Mushroom Classification</h1>
+            <button onclick="toggleLanguage()" class="text-gray-600 hover:text-blue-500 transition text-lg focus:outline-none">🌍</button>
+        </div>
+        <h2 class="text-xl font-medium text-gray-700 my-6">
+            {{ predict }}
+        </h2>
+        <button onclick="goBack()" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-lg hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2" data-en="Go Back" data-th="กลับ">
+            Go Back
+        </button>
+    </div>
 
-<body>
-    <h1>
-        Hello Word! I Miss P Sai Very Much Hahahahah
-    </h1>
-    <h2>
-        Predict Value {{predict}}
-    </h2>
+    <script>
+        function toggleLanguage() {
+            var elements = document.querySelectorAll('[data-en], [data-th]');
+            var currentLang = document.documentElement.lang;
+            elements.forEach(element => {
+                element.textContent = currentLang === 'en' ? element.getAttribute('data-th') : element.getAttribute('data-en');
+            });
+            document.documentElement.lang = currentLang === 'en' ? 'th' : 'en';
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
 </body>
-
 </html>

@@ -17,20 +17,40 @@ def home():
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    precipitation = request.form["precipitation"]
-    temp_max = request.form["temp_max"]
-    temp_min = request.form["temp_min"]
-    wind = request.form["wind"]
+    cap_surface = (int(request.form["cap_surface"]),)
+    odor = (int(request.form["odor"]),)
+    gill_spacing = (int(request.form["gill_spacing"]),)
+    gill_size = (int(request.form["gill_size"]),)
+    stalk_root = (int(request.form["stalk_root"]),)
+    stalk_surface_below_ring = (int(request.form["stalk_surface_below_ring"]),)
+    spore_print_color = (int(request.form["spore_print_color"]),)
+    population = (int(request.form["population"]),)
+    habitat = (int(request.form["habitat"]),)
 
-    input_data = (float(precipitation), float(temp_max), float(temp_min), float(wind))
+    input_data = (
+        cap_surface,
+        odor,
+        gill_spacing,
+        gill_size,
+        stalk_root,
+        stalk_surface_below_ring,
+        spore_print_color,
+        population,
+        habitat,
+    )
     input_array = np.array([input_data], dtype=np.float32)
 
     inputs = {ort_session.get_inputs()[0].name: input_array.reshape(1, -1)}
     prediction = ort_session.run(None, inputs)
+    
+    if prediction[0] == 0:
+        message = "Edibles | กินได้"
+    elif prediction[0] == 1:
+        message = "Poisonous! | กินไม่ได้"
+    else:
+        message = "No Data | ไม่มีข้อมูล"
 
-    predict = prediction[0][0]
-    return render_template("predict.html", predict=predict), 200
-
+    return render_template("predict.html", predict=message), 200
 
 @app.route("/predict/line", methods=["POST"])
 def predict_line():

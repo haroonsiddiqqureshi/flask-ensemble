@@ -1,38 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Mushroom Classification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
+    <script>
+        function toggleLanguage() {
+            var elements = document.querySelectorAll('[data-en], [data-th]');
+            var currentLang = document.documentElement.lang;
+            elements.forEach(element => {
+                element.textContent = currentLang === 'en' ? element.getAttribute('data-th') : element.getAttribute('data-en');
+            });
+            document.documentElement.lang = currentLang === 'en' ? 'th' : 'en';
+        }
+
+        function validateForm() {
+            // Add form validation logic if necessary
+            return true;
+        }
+    </script>
 </head>
+<body class="bg-gradient-to-r from-green-200 to-blue-300 min-h-screen flex items-center justify-center p-4 lg:p-0">
+    <div class="bg-white shadow-2xl rounded-lg p-6 max-w-3xl w-full transform transition-transform hover:scale-105 duration-300">
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-3xl font-extrabold text-gray-900" data-en="Mushroom Classification" data-th="การจำแนกประเภทเห็ด">Mushroom Classification</h1>
+            <button onclick="toggleLanguage()" class="text-gray-600 hover:text-blue-500 transition text-lg focus:outline-none">🌍</button>
+        </div>
+        <form action="{{url_for('predict')}}" method="POST" class="grid grid-cols-2 md:grid-cols-3 gap-4" onsubmit="return validateForm()">
+            <!-- Cap Surface -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" data-en="Cap Surface" data-th="ผิวด้านบนของหมวกเห็ด">Cap Surface</label>
+                <select id="cap_surface" name="cap_surface" class="w-full p-2 border rounded-md focus:border-blue-500 focus:outline-none" required>
+                    <option value="0" data-en="Fibrous" data-th="เส้นใย" selected>Fibrous</option>
+                    <option value="1" data-en="Grooves" data-th="ร่อง">Grooves</option>
+                    <option value="2" data-en="Scaly" data-th="มีเกล็ด">Scaly</option>
+                    <option value="3" data-en="Smooth" data-th="เรียบ">Smooth</option>
+                </select>
+            </div>
 
-<body>
-    <h1>
-        Hello Word! I Miss P Sai Very Much Hahahahah
-    </h1>
-    <form action="{{url_for('predict')}}" method="POST">
-        <div>
-            <label for="precipitation">precipitation</label>
-            <input name="precipitation" type="number" value="10.00">
-        </div>
-        <div>
-            <label for="temp_max">temp_max</label>
-            <input name="temp_max" type="number" value="20">
-        </div>
-        <div>
-            <label for="temp_min">temp_min</label>
-            <input name="temp_min" type="number" value="2">
-        </div>
-        <div>
-            <label for="wind">wind</label>
-            <input name="wind" type="number" value="4.2">
-        </div>
+            <!-- Odor -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" data-en="Odor" data-th="กลิ่น">Odor</label>
+                <select id="odor" name="odor" class="w-full p-2 border rounded-md focus:border-blue-500 focus:outline-none" required>
+                    <option value="0" data-en="Almond" data-th="อัลมอนด์" selected>Almond</option>
+                    <option value="1" data-en="Anise" data-th="โป๊ยกั๊ก">Anise</option>
+                    <option value="2" data-en="Creosote" data-th="ครีโอโซต">Creosote</option>
+                    <option value="3" data-en="Fishy" data-th="กลิ่นปลา">Fishy</option>
+                    <option value="4" data-en="Foul" data-th="มีกลิ่นไม่ดี">Foul</option>
+                    <option value="5" data-en="Musty" data-th="อับชื้น">Musty</option>
+                    <option value="6" data-en="None" data-th="ไม่มี">None</option>
+                    <option value="7" data-en="Pungent" data-th="ฉุน">Pungent</option>
+                    <option value="8" data-en="Spicy" data-th="เผ็ด">Spicy</option>
+                </select>
+            </div>
 
-        <div>
-            <button type="submit">Predict</button>
-        </div>
-    </form>
+            <!-- Gill Spacing -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" data-en="Gill Spacing" data-th="ระยะห่างของเหงือก">Gill Spacing</label>
+                <select id="gill_spacing" name="gill_spacing" class="w-full p-2 border rounded-md focus:border-blue-500 focus:outline-none" required>
+                    <option value="0" data-en="Close" data-th="ใกล้" selected>Close</option>
+                    <option value="1" data-en="Crowded" data-th="เบียด">Crowded</option>
+                    <option value="2" data-en="Distant" data-th="ห่าง">Distant</option>
+                </select>
+            </div>
+
+            <!-- Gill Size -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" data-en="Gill Size" data-th="ขนาดเหงือก">Gill Size</label>
+                <select id="gill_size" name="gill_size" class="w-full p-2 border rounded-md focus:border-blue-500 focus:outline-none" required>
+                    <option value="0" data-en="Broad" data-th="กว้าง" selected>Broad</option>
+                    <option value="1" data-en="Narrow" data-th="แคบ">Narrow</option>
+                </select>
+            </div>
+
+            <!-- Stalk Root -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" data-en="Stalk Root" data-th="รากก้านเห็ด">Stalk Root</label>
+                <select id="stalk_root" name="stalk_root" class="w-full p-2 border rounded-md focus:border-blue-500 focus:outline-none" required>
+                    <option value="0" data-en="Bulbous" data-th="เป็นหลอด" selected>Bulbous</option>
+                    <option value="1" data-en="Club" data-th="คลับ">Club</option>
+                    <option value="2" data-en="Cup" data-th="ถ้วย">Cup</option>
+                    <option value="3" data-en="Equal" data-th="เท่ากัน">Equal</option>
+                    <option value="4" data-en="Rhizomorphs" data-th="ไรโซมอร์ฟ">Rhizomorphs</option>
+                    <option value="5" data-en="Rooted" data-th="มีราก">Rooted</option>
+                    <option value="6" data-en="Missing" data-th="หายไป">Missing</option>
+                </select>
+            </div>
+
+            <!-- Stalk Surface Below Ring -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" data-en="Stalk Surface Below Ring" data-th="ผิวก้านใต้แหวน">Stalk Surface Below Ring</label>
+                <select id="stalk_surface_below_ring" name="stalk_surface_below_ring" class="w-full p-2 border rounded-md focus:border-blue-500 focus:outline-none" required>
+                    <option value="0" data-en="Fibrous" data-th="เส้นใย" selected>Fibrous</option>
+                    <option value="1" data-en="Scaly" data-th="มีเกล็ด">Scaly</option>
+                    <option value="2" data-en="Silky" data-th="ไหม">Silky</option>
+                    <option value="3" data-en="Smooth" data-th="เรียบ">Smooth</option>
+                </select>
+            </div>
+
+            <!-- Spore Print Color -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" data-en="Spore Print Color" data-th="สีของสปอร์">Spore Print Color</label>
+                <select id="spore_print_color" name="spore_print_color" class="w-full p-2 border rounded-md focus:border-blue-500 focus:outline-none" required>
+                    <option value="0" data-en="Black" data-th="ดำ" selected>Black</option>
+                    <option value="1" data-en="Brown" data-th="น้ำตาล">Brown</option>
+                    <option value="2" data-en="Buff" data-th="ครีม">Buff</option>
+                    <option value="3" data-en="Chocolate" data-th="ช็อกโกแลต">Chocolate</option>
+                    <option value="4" data-en="Green" data-th="เขียว">Green</option>
+                    <option value="5" data-en="Orange" data-th="ส้ม">Orange</option>
+                    <option value="6" data-en="Purple" data-th="ม่วง">Purple</option>
+                    <option value="7" data-en="White" data-th="ขาว">White</option>
+                    <option value="8" data-en="Yellow" data-th="เหลือง">Yellow</option>
+                </select>
+            </div>
+
+            <!-- Population -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" data-en="Population" data-th="จำนวนประชากร">Population</label>
+                <select id="population" name="population" class="w-full p-2 border rounded-md focus:border-blue-500 focus:outline-none" required>
+                    <option value="0" data-en="Abundant" data-th="มากมาย" selected>Abundant</option>
+                    <option value="1" data-en="Clustered" data-th="กลุ่ม">Clustered</option>
+                    <option value="2" data-en="Numerous" data-th="มากมาย">Numerous</option>
+                    <option value="3" data-en="Scattered" data-th="กระจาย">Scattered</option>
+                    <option value="4" data-en="Several" data-th="หลาย">Several</option>
+                    <option value="5" data-en="Solitary" data-th="โดดเดี่ยว">Solitary</option>
+                </select>
+            </div>
+
+            <!-- Habitat -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" data-en="Habitat" data-th="ที่อยู่อาศัย">Habitat</label>
+                <select id="habitat" name="habitat" class="w-full p-2 border rounded-md focus:border-blue-500 focus:outline-none" required>
+                    <option value="0" data-en="Grasses" data-th="หญ้า" selected>Grasses</option>
+                    <option value="1" data-en="Leaves" data-th="ใบไม้">Leaves</option>
+                    <option value="2" data-en="Meadows" data-th="ทุ่งหญ้า">Meadows</option>
+                    <option value="3" data-en="Paths" data-th="ทางเดิน">Paths</option>
+                    <option value="4" data-en="Urban" data-th="เมือง">Urban</option>
+                    <option value="5" data-en="Waste" data-th="ขยะ">Waste</option>
+                    <option value="6" data-en="Woods" data-th="ป่าไม้">Woods</option>
+                </select>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="col-span-2 md:col-span-3 bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-lg hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2" data-en="Submit" data-th="ตรวจสอบ">
+                Submit
+            </button>
+        </form>
+    </div>
 </body>
-
 </html>
