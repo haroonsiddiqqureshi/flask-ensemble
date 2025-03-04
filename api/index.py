@@ -42,20 +42,14 @@ def predict():
 
     inputs = {ort_session.get_inputs()[0].name: input_array.reshape(1, -1)}
     prediction = ort_session.run(None, inputs)
-    
-    if prediction[0] == 0:
-        message = "Edibles | กินได้"
-    elif prediction[0] == 1:
-        message = "Poisonous! | กินไม่ได้"
-    else:
-        message = "No Data | ไม่มีข้อมูล"
 
-    return render_template("predict.html", predict=message), 200
+    return render_template("predict.html", predict=prediction[0]), 200
+
 
 @app.route("/predict/line", methods=["POST"])
 def predict_line():
     try:
-        data = request.get_json() 
+        data = request.get_json()
         cap_surface = data["cap-surface"]
         odor = data["odor"]
         gill_spacing = data["gill-spacing"]
@@ -83,11 +77,9 @@ def predict_line():
         prediction = ort_session.run(None, inputs)
 
         if prediction[0] == 0:
-            message = "Edibles | กินได้"
+            message = "เห็ดชนิดนี้ปลอยภัย✔️ กินได้🍴"
         elif prediction[0] == 1:
-            message = "Poisonous! | กินไม่ได้"
-        else:
-            message = "No Data | ไม่มีข้อมูล"
+            message = "เห็ดชนิดนี้มีพิษ☠️ กินไม่ได้❌"
 
         return (
             jsonify(
